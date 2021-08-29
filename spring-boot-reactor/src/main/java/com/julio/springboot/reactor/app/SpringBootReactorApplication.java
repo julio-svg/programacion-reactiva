@@ -1,5 +1,6 @@
 package com.julio.springboot.reactor.app;
 
+import com.julio.springboot.reactor.app.models.Usuario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -19,13 +20,18 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		Flux<String> nombres = Flux.just("Julio" , "Raquel" , "" ,"Hugo" )
-				.doOnNext(a -> {
-					if (a.isEmpty()){
+		Flux<Usuario> nombres = Flux.just("Julio Hernandez" , "Raquel Sanabria" , "Carlos Hernandez" ,"Hugo Hernandez" )
+				.filter(a -> "HERNANDEZ".equals(a.toUpperCase().split(" ")[1]))
+				.map( a -> new Usuario(a.toUpperCase().split(" ")[0],a.toUpperCase().split(" ")[1]))
+				.doOnNext(usuario -> {
+					if (usuario.getNombre().isEmpty()){
 						throw new RuntimeException();
 					}
-					System.out.println(a);
+					System.out.println(usuario);
 				});
-		nombres.subscribe(log::info , error -> System.out.println("Los nombres no puede estar vacios - " + error.getClass()));
+
+		nombres.subscribe(l -> log.info(l.toString()) ,
+				error -> System.out.println("Los nombres no puede estar vacios - " + error.getClass()),
+				() -> System.out.println("el proceso ha terminado"));
 	}
 }
